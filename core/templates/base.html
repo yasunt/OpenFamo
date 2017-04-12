@@ -1,0 +1,93 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>{% block title %}Famo{% endblock title %}</title>
+		<meta charset="utf-8"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no"/>
+		<meta name="description" content="{% block description %}育児や出産、夫婦関係など家族に関わるさまざまな記事を閲覧し、コメントできるコミュニティサイトです。{% endblock description %}"/>
+		<meta name="application-name" content="Famo"/>
+		<meta property="og:title" content="{% block ogtitle %}Famo{% endblock ogtitle %}"/>
+		<link rel="stylesheet" href="{% static 'core/assets/css/main.css' %}"/>
+		{% block extend_head %}
+		{% endblock extend_head %}
+	</head>
+	<body>
+
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+					<div id="main">
+						<div class="inner">
+							<!-- Header -->
+								<header id="header">
+									<a href="" class="logo"><img src="{% static 'core/images/logo01.png' %}"></a>
+									<ul class="icons">
+											{% block extend_header_list %}{% endblock %}
+									</ul>
+								</header>
+
+							<!-- Section -->
+                {% block content %}
+                {% endblock content %}
+
+						</div>
+					</div>
+
+				{% block sidebar %}
+				<!-- Sidebar -->
+					<div id="sidebar">
+						<div class="inner">
+
+								{% if not request.user.username %}
+								<section id="login">
+									<a href="{% url 'login' %}?next={{ request.path }}" class="button">ログイン</a>
+								</section>
+								{% endif %}
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="">トップページ</a></li>
+										<li><a href="">マイページ</a></li>
+										<li><a href="">人気の記事</a></li>
+										<li><a href="">人気トピック</a></li>
+									</ul>
+								</nav>
+
+							<!-- Section -->
+								{% if request.user.username %}
+								<section>
+									<a href="{% url 'logout' %}" class="button">ログアウト</a>
+								</section>
+								{% endif %}
+
+							<!-- Footer -->
+								<footer id="footer">
+									<p class="copyright">Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+								</footer>
+
+						</div>
+					</div>
+					{% endblock sidebar %}
+
+			</div>
+
+		<!-- Scripts -->
+			<script src="{% static 'core/assets/js/jquery.min.js' %}"></script>
+			<script src="{% static 'core/assets/js/skel.min.js' %}"></script>
+			<script src="{% static 'core/assets/js/util.js' %}"></script>
+			<script src="{% static 'core/assets/js/main.js' %}"></script>
+
+	</body>
+</html>

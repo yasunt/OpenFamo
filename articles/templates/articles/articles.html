@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block content %}
+  <ul>
+    {% for article in view.popular_articles.popular_articles %}
+    <li>{{ article.title }}</li>
+    {% endfor %}
+  </ul>
+{% endblock content %}
