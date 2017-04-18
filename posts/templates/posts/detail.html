@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load posts_tags %}
+
+{% block script %}
+  {{ block.super }}
+  {% include 'posts/_modal_script.html' %}
+  <script>
+    $(document).ready(function() {
+      $("[id^='good_button']").click(function() {
+        $.ajax({
+          'url': "{% url 'posts:good_button' %}",
+          'type': 'POST',
+          'data': {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            'message': 'help!'
+          },
+          'dataType': 'json',
+          'success': function(response) {
+            alert(response.context);
+          }
+        })
+      })
+      $("#submit").click(function() {
+        $.ajax({
+          'url': "{% url 'posts:create_answer' %}".
+          'type': 'POST',
+          'data': {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            'content': $("#content").val(),
+          }
+        })
+      })
+    })
+  </script>
+{% endblock script %}
+
+{% block content %}
+  <section>
+    {% post_node question %}
+  </section>
+  <section>
+    {% for answer in answers %}
+      {% post_node answer %}
+    {% endfor %}
+  {% if request.user.is_authenticated %}
+    {% include 'posts/_create_answer_modal.html' with answer_form=form %}
+    {% include 'posts/_create_answer_trigger.html' with trigger_label='回答する' %}
+  {% else %}
+    {% include '_login_modal.html' with login_form=login_form %}
+    {% include '_login_modal_trigger.html' with trigger_label='hoge' %}
+  {% endif %}
+{% endblock content %}

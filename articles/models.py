@@ -1,6 +1,7 @@
 from django.db import models
 
-from core.models import TimeStampMixin, HitsCountMixin
+from core.models import TimeStampMixin, HitsCountMixin, ContentAbstractModel
+from accounts.models import FamoUser
 
 
 class Article(TimeStampMixin, HitsCountMixin):
@@ -10,3 +11,7 @@ class Article(TimeStampMixin, HitsCountMixin):
 
     title = models.CharField(max_length=100)
     url = models.URLField()
+
+
+class Comment(TimeStampMixin, ContentAbstractModel):
+    user = models.ForeignKey(FamoUser)

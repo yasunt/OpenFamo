@@ -1,7 +1,11 @@
 from django.shortcuts import render
 from django.utils.functional import cached_property
+from django.views.generic import CreateView, UpdateView
 
-from .models import Article
+from braces.views import LoginRequiredMixin
+
+from .models import Article, Comment
+from .forms import CommentForm
 
 
 class PopularMixin(object):
@@ -13,3 +17,19 @@ class PopularMixin(object):
 
 class ArticlesIndexView(PopularMixin):
     pass
+
+
+class CommentPostMixin(object):
+
+    model = Comment
+    fields = ('content', )
+
+
+class CommentPostView(LoginRequiredMixin, CommentPostMixin, CreateView):
+
+    form_class = CommentForm
+
+
+class CommentUpdateView(LoginRequiredMixin, CommentPostMixin, UpdateView):
+
+    form_class = CommentForm

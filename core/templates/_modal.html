@@ -1,0 +1,16 @@
+<!-- Modal -->
+<div class="modal fade" id="actionModal" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body">
+        {% block modal_content %}
+          {{ form }}
+        {% endblock modal_content %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn fit" data-dismiss="modal" id="close">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>

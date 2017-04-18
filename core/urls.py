@@ -15,6 +15,7 @@ Including another URLconf
 """
 from django.conf.urls import url, include
 from django.contrib import admin
+from django.conf import settings
 
 from .views import CoreIndexView
 
@@ -22,7 +23,13 @@ urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^posts/', include('posts.urls')),
     url(r'^', include('django.contrib.auth.urls')),
-    url(r'^', include('registration.backends.hmac.urls')),
+    # url(r'^accounts/register/$', RegistrationView.as_view(form_class=FamoUserForm), name='registration_register',),
+    url(r'^accounts/', include('registration.backends.hmac.urls')),
     url('', include('social.apps.django_app.urls', namespace='social')),
-    # url('^', CoreIndexView.as_view(), name='index'),
 ]
+
+if settings.DEBUG:
+    import debug_toolbar
+    urlpatterns += (
+        url(r'^__debug__/', include(debug_toolbar.urls)),
+    )

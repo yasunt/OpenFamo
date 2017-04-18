@@ -37,7 +37,9 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     # third party package
     'registration',
+    'rest_framework',
     'social.apps.django_app.default',
+    'debug_toolbar',
     # local package
     'core.apps.CoreConfig',
     'accounts.apps.AccountsConfig',
@@ -54,6 +56,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'debug_toolbar.middleware.DebugToolbarMiddleware',
 ]
 
 ROOT_URLCONF = 'core.urls'
@@ -122,8 +125,10 @@ USE_L10N = True
 
 USE_TZ = True
 
+INTERNAL_IPS = ('127.0.0.1',)
 
-# social authentication settings.
+
+# social authentication settings
 AUTHENTICATION_BACKENDS = [
     'social.backends.twitter.TwitterOAuth',
     'django.contrib.auth.backends.ModelBackend',
@@ -132,7 +137,7 @@ AUTHENTICATION_BACKENDS = [
 AUTH_USER_MODEL = 'accounts.FamoUser'
 
 LOGIN_URL = '/login'
-LOGIN_REDIRECT_URL = '/portfolio'
+LOGIN_REDIRECT_URL = '/posts/detail/1'
 LOGOUT_REDIRECT_URL = '/login'
 
 

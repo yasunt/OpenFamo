@@ -1,7 +1,28 @@
 {% extends 'base.html' %}
 
+{% block script %}
+  {{ block.super }}
+  {% include 'posts/_modal_script.html' %}
+{% endblock script %}
+
 {% block content %}
-{% for question in question_list %}
-  {{ question.title }}
-{% endfor %}
+  <form action="{% url 'posts:search' %}" method="GET">
+    <input type="text" name="q" />
+    <button type="submit">search</button>
+  </form>
+  {% for question in question_list %}
+    <h3><a href="{% url 'posts:detail' question.id %}">{{ question.title }}</a></h3>
+    <p>{{ question.content }}</p>
+  {% endfor %}
+  <hr>
+  <a href="{% url 'posts:question_rest_api' %}">API</a>
+  <button type="button" class="button special small" data-toggle="modal" data-target="#actionModal" id="command">トピックを作成する</button>
+  {% if request.user.username %}
+    {% include '_modal.html' with form=form modal_id='actionModal' %}
+  {% else %}
+    {% include '_modal.html' with form=form modal_id='actionModal' %}
+  {% endif %}
+  <form>
+    {{ login_form }}
+  </form>
 {% endblock content %}

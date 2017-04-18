@@ -1,0 +1,22 @@
+<!-- Modal -->
+<div class="modal fade" id="answerModal" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-body">
+        {% block modal_content %}
+        <form>
+          {% csrf_token %}
+          {{ answer_form }}
+          <ul class="actions">
+            <button type="button" class="small" id="submit">投稿する</button>
+          </ul>
+        </form>
+        {% endblock modal_content %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn fit" data-dismiss="modal" id="close">閉じる</button>
+      </div>
+    </div>
+  </div>
+</div>
