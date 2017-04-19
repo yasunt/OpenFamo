@@ -2,7 +2,7 @@
 
 {% block script %}
   {{ block.super }}
-  {% include 'posts/_modal_script.html' %}
+  {% include 'posts/_modal_scripts.html' %}
 {% endblock script %}
 
 {% block content %}
@@ -16,13 +16,11 @@
   {% endfor %}
   <hr>
   <a href="{% url 'posts:question_rest_api' %}">API</a>
-  <button type="button" class="button special small" data-toggle="modal" data-target="#actionModal" id="command">トピックを作成する</button>
-  {% if request.user.username %}
-    {% include '_modal.html' with form=form modal_id='actionModal' %}
+  {% if request.user.is_authenticated %}
+    <button type="button" class="button special small" data-toggle="modal" data-target="#questionModal" id="command">トピックを作成する</button>
+    {% include 'posts/_create_question_modal.html' with form=form modal_id='actionModal' %}
   {% else %}
-    {% include '_modal.html' with form=form modal_id='actionModal' %}
+    {% include '_login_modal_trigger.html' with trigger_label='ログインして回答' %}
+    {% include '_login_modal.html' with login_form=login_form %}
   {% endif %}
-  <form>
-    {{ login_form }}
-  </form>
 {% endblock content %}

@@ -5,7 +5,12 @@
     <div class="modal-content">
       <div class="modal-body">
         {% block modal_content %}
-          {{ form }}
+          <form action="{% url 'posts:create_question' %}" method="post">
+            {% csrf_token %}
+            {{ form.title.label_tag }}{{ form.title }}
+            {{ form.content.label_tag }}{{ form.content }}
+            <button class="small fit" type="submit">Post</button>
+          </form>
         {% endblock modal_content %}
       </div>
       <div class="modal-footer">

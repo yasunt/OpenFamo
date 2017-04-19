@@ -3,7 +3,7 @@
 
 {% block script %}
   {{ block.super }}
-  {% include 'posts/_modal_script.html' %}
+  {% include 'posts/_modal_scripts.html' %}
   <script>
     $(document).ready(function() {
       $("[id^='good_button']").click(function() {
@@ -22,11 +22,17 @@
       })
       $("#submit").click(function() {
         $.ajax({
-          'url': "{% url 'posts:create_answer' %}".
+          'url': "{% url 'posts:create_answer' %}",
           'type': 'POST',
           'data': {
             csrfmiddlewaretoken: '{{ csrf_token }}',
             'content': $("#content").val(),
+            'user_id': '{{ request.user.id }}',
+            'question_id': '{{ question.id }}',
+          },
+          'dataType': 'json',
+          'success': function(response) {
+            alert(response);
           }
         })
       })
@@ -35,6 +41,7 @@
 {% endblock script %}
 
 {% block content %}
+  {{ form.errors }}
   <section>
     {% post_node question %}
   </section>

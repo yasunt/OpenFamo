@@ -1,23 +1,24 @@
 from django import forms
+from django.shortcuts import get_object_or_404
 from django.db import models
+from django.core.exceptions import ValidationError
 
+from braces.forms import UserKwargModelFormMixin
+
+from core.forms import UserValidateFormMixin
+from accounts.models import FamoUser
 from .models import Question, Answer
+from .validators import validate_user
 
 
-class QuestionCreateForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class QuestionCreateForm(UserValidateFormMixin, forms.ModelForm):
 
     class Meta:
         model = Question
-        fields = ('title', 'content', 'user')
+        fields = ('title', 'content', )
 
 
-class AnswerCreateForm(forms.ModelForm):
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+class AnswerCreateForm(UserValidateFormMixin, forms.ModelForm):
 
     class Meta:
         model = Answer

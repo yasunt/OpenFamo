@@ -1,4 +1,4 @@
-<form action="{% url 'posts:create_question' %}" method="post">
+<form action="{% url 'posts:create_answer' %}" method="post">
   {% csrf_token %}
   {{ form }}
   <button type="submit">Post</button>

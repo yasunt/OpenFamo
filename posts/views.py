@@ -4,26 +4,36 @@ from django.views.generic import ListView, DeleteView, CreateView, DetailView, T
 from django.views.generic.edit import FormMixin
 from django.core.exceptions import PermissionDenied
 
-from braces.views import LoginRequiredMixin
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView
+from braces.views import LoginRequiredMixin, UserFormKwargsMixin
+from rest_framework.response import Response
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView
 
 from core.views import TitleSearchMixin, JsonResponseMixin, LoginFormMixin
 from core.forms import LoginForm
 from accounts.models import FamoUser
 from .models import Answer, Question
 from .forms import QuestionCreateForm, AnswerCreateForm
-from .serializer import QuestionSerializer
+from .serializers import QuestionSerializer, AnswerSerializer
 
 
 class QuestionCreateFormMixin(FormMixin):
-    model = Question
-    # form_class = QuestionCreateForm
+
 
     def get_form_class(self):
-        if self.request.user.username:
+        if self.request.user.is_authenticated:
             return QuestionCreateForm
         else:
             return LoginForm
+
+    def get_initial(self):
+        initial = super().get_initial()
+        initial['user'] = FamoUser.objects.get(id=self.request.user.id)
+        return initial
+
+    def get_form_kwargs(self):
+        kwargs = super().get_form_kwargs()
+        kwargs['user'] = self.request.user
+        return kwargs
 
 
 class AnswerCreateFormMixin(object):
@@ -47,6 +57,15 @@ class QuestionListView(LoginFormMixin, QuestionCreateFormMixin, ListView):
 
     def get_success_url(self):
         return reverse('posts:list')
+
+class QuestionCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
+    models = Question
+    form_class = QuestionCreateForm
+    template_name = 'posts/detail.html'
+
+    def get_success_url(self):
+        print(self)
+        return reverse('posts:detail')
 
 
 class QuestionDetailView(LoginRequiredMixin, DetailView):
@@ -92,7 +111,6 @@ class QuestionCreateReadView(LoginRequiredMixin, ListCreateAPIView):
 
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
-    lookup_field = 'title'
 
 
 class QuestionReadUpdateDeleteView(LoginRequiredMixin, RetrieveUpdateAPIView):
@@ -101,3 +119,13 @@ class QuestionReadUpdateDeleteView(LoginRequiredMixin, RetrieveUpdateAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
     lookup_field = 'title'
+
+
+class AnswerCreateAPIView(LoginRequiredMixin, CreateAPIView):
+
+    serializer_class = AnswerSerializer
+
+    def post(self, request):
+        user = get_object_or_404(FamoUser, username=request.user.username)
+        question = get_object_or_404(Question, id=request.POST['question_id'])
+        print(self.get_object())
