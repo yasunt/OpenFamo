@@ -3,6 +3,25 @@
 {% block script %}
   {{ block.super }}
   {% include 'posts/_modal_scripts.html' %}
+  <script>
+    $(document).ready(function() {
+      $('#submit').click(function() {
+        $.ajax({
+          'url': "{% url 'posts:create_question' %}",
+          'type': 'POST',
+          'data': {
+            csrfmiddlewaretoken: '{{ csrf_token }}',
+            'title': $('#id_title').val(),
+            'content': $('#id_content').val(),
+          },
+          'dataType': 'json',
+          'success': function(response) {
+            location.reload();
+          }
+        })
+      })
+    })
+  </script>
 {% endblock script %}
 
 {% block content %}
@@ -11,13 +30,15 @@
     <button type="submit">search</button>
   </form>
   {% for question in question_list %}
-    <h3><a href="{% url 'posts:detail' question.id %}">{{ question.title }}</a></h3>
-    <p>{{ question.content }}</p>
+    <section>
+      <h3><a href="{% url 'posts:detail' question.id %}">{{ question.title }}</a></h3>
+      <p>{{ question.content }}</p>
+    </section>
   {% endfor %}
   <hr>
   <a href="{% url 'posts:question_rest_api' %}">API</a>
   {% if request.user.is_authenticated %}
-    <button type="button" class="button special small" data-toggle="modal" data-target="#questionModal" id="command">トピックを作成する</button>
+    <button type="button" class="button special small" data-toggle="modal" data-target="#questionModal">トピックを作成する</button>
     {% include 'posts/_create_question_modal.html' with form=form modal_id='actionModal' %}
   {% else %}
     {% include '_login_modal_trigger.html' with trigger_label='ログインして回答' %}

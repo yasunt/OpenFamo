@@ -9,7 +9,7 @@
             {% csrf_token %}
             {{ form.title.label_tag }}{{ form.title }}
             {{ form.content.label_tag }}{{ form.content }}
-            <button class="small fit" type="submit">Post</button>
+            <button class="small fit" type="button" id="submit">Post</button>
           </form>
         {% endblock modal_content %}
       </div>

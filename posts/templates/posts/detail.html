@@ -8,11 +8,11 @@
     $(document).ready(function() {
       $("[id^='good_button']").click(function() {
         $.ajax({
-          'url': "{% url 'posts:good_button' %}",
+          'url': "",
           'type': 'POST',
           'data': {
             csrfmiddlewaretoken: '{{ csrf_token }}',
-            'message': 'help!'
+            'answer_id': ''
           },
           'dataType': 'json',
           'success': function(response) {
@@ -26,13 +26,12 @@
           'type': 'POST',
           'data': {
             csrfmiddlewaretoken: '{{ csrf_token }}',
-            'content': $("#content").val(),
-            'user_id': '{{ request.user.id }}',
+            'content': $("#id_content").val(),
             'question_id': '{{ question.id }}',
           },
           'dataType': 'json',
           'success': function(response) {
-            alert(response);
+            location.reload();
           }
         })
       })

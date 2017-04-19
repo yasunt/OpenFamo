@@ -22,4 +22,4 @@ class AnswerCreateForm(UserValidateFormMixin, forms.ModelForm):
 
     class Meta:
         model = Answer
-        fields = ('title', 'content')
+        fields = ('content', )

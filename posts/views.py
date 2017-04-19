@@ -46,7 +46,9 @@ class AnswerCreateView(LoginRequiredMixin, JsonResponseMixin, AnswerCreateFormMi
         return self.render_to_json_response(context, **response_kwargs)
 
     def get_data(self, context):
-        pass
+        print(self.request)
+        context = {'message': 'succeed'}
+        return context
 
 
 class QuestionListView(LoginFormMixin, QuestionCreateFormMixin, ListView):
@@ -58,13 +60,13 @@ class QuestionListView(LoginFormMixin, QuestionCreateFormMixin, ListView):
     def get_success_url(self):
         return reverse('posts:list')
 
+
 class QuestionCreateView(LoginRequiredMixin, UserFormKwargsMixin, CreateView):
     models = Question
     form_class = QuestionCreateForm
     template_name = 'posts/detail.html'
 
     def get_success_url(self):
-        print(self)
         return reverse('posts:detail')
 
 
@@ -121,11 +123,32 @@ class QuestionReadUpdateDeleteView(LoginRequiredMixin, RetrieveUpdateAPIView):
     lookup_field = 'title'
 
 
+class QuestionCreateAPIView(LoginRequiredMixin, CreateAPIView):
+
+    serializer_class = QuestionSerializer
+
+    def perform_create(self, serializer):
+        print(self.request.POST)
+        if self.request.user.is_authenticated:
+            user = self.request.user
+        else:
+            ValidationError('Unauthenticated User.')
+        serializer.save(user=user)
+
+
 class AnswerCreateAPIView(LoginRequiredMixin, CreateAPIView):
 
     serializer_class = AnswerSerializer
 
-    def post(self, request):
-        user = get_object_or_404(FamoUser, username=request.user.username)
-        question = get_object_or_404(Question, id=request.POST['question_id'])
-        print(self.get_object())
+    def perform_create(self, serializer):
+        if self.request.user.is_authenticated:
+            user = self.request.user
+        else:
+            ValidationError('Unauthenticated User.')
+        question = get_object_or_404(Question, id=self.request.POST['question_id'])
+        serializer.save(user=user, question=question)
+
+
+class AnswerEvaluateAPIView(LoginRequiredMixin, CreateAPIView):
+
+    pass
