@@ -1,12 +1,13 @@
+from django.http import JsonResponse
 from django.shortcuts import render, get_object_or_404
 from django.urls import reverse
-from django.views.generic import ListView, DeleteView, CreateView, DetailView, TemplateView
+from django.views.generic import ListView, DeleteView, CreateView, DetailView, UpdateView, TemplateView
 from django.views.generic.edit import FormMixin
 from django.core.exceptions import PermissionDenied
 
 from braces.views import LoginRequiredMixin, UserFormKwargsMixin
 from rest_framework.response import Response
-from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView
+from rest_framework.generics import ListCreateAPIView, RetrieveUpdateAPIView, CreateAPIView, UpdateAPIView, RetrieveUpdateDestroyAPIView
 
 from core.views import TitleSearchMixin, JsonResponseMixin, LoginFormMixin
 from core.forms import LoginForm
@@ -46,13 +47,11 @@ class AnswerCreateView(LoginRequiredMixin, JsonResponseMixin, AnswerCreateFormMi
         return self.render_to_json_response(context, **response_kwargs)
 
     def get_data(self, context):
-        print(self.request)
         context = {'message': 'succeed'}
         return context
 
 
 class QuestionListView(LoginFormMixin, QuestionCreateFormMixin, ListView):
-    # model = Question
     queryset = Question.objects.select_related()
     context_object_name = 'question_list'
     template_name = 'posts/question_list.html'
@@ -83,72 +82,124 @@ class QuestionDetailView(LoginRequiredMixin, DetailView):
         # form class depends on whether request user is question poster or not.
         if question.is_poster(self.request.user):
             context['form'] = QuestionCreateForm
+            context['is_poster'] = True
+            context['label'] = '質問を編集する'
         else:
             context['form'] = AnswerCreateForm
+            context['label'] = '回答する'
 
         return context
-
-
-class QuestionCreateUpdateView(CreateView):
-    model = Question
-    template_name = 'posts/question_list.html'
-    form_class = QuestionCreateForm
-
-    def get_success_url(self):
-        return reverse('posts:list')
-
-    def form_valid(self, form):
-        return super().form_valid(form)
-
-    def form_invalid(self, form):
-        return super().form_invalid(form)
 
 
 class QuestionSearchView(TitleSearchMixin, ListView):
     model = Question
 
 
-class QuestionCreateReadView(LoginRequiredMixin, ListCreateAPIView):
-    # need to set a permission.
+class UserRelatedCreateAPIView(LoginRequiredMixin, CreateAPIView):
+    '''
+    Base API view class for creating user-related objects via ajax.
+    You have to define the class variable which is named serializer_class.
+    And add fields to the instance variable which is named additional_fields,
+    by overridding perform_create method in Inheriting view classes.
+    '''
 
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
-
-class QuestionReadUpdateDeleteView(LoginRequiredMixin, RetrieveUpdateAPIView):
-    # need to set a permission.
-
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-    lookup_field = 'title'
-
-
-class QuestionCreateAPIView(LoginRequiredMixin, CreateAPIView):
-
-    serializer_class = QuestionSerializer
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.additional_fields = {}
 
     def perform_create(self, serializer):
-        print(self.request.POST)
         if self.request.user.is_authenticated:
             user = self.request.user
         else:
             ValidationError('Unauthenticated User.')
-        serializer.save(user=user)
+
+        if self.additional_fields:
+            serializer.save(user=user, **self.additional_fields)
+        else:
+            serializer.save(user=user)
 
 
-class AnswerCreateAPIView(LoginRequiredMixin, CreateAPIView):
+class QuestionCreateAPIView(UserRelatedCreateAPIView):
+
+    serializer_class = QuestionSerializer
+
+
+class AnswerCreateAPIView(UserRelatedCreateAPIView):
 
     serializer_class = AnswerSerializer
 
     def perform_create(self, serializer):
-        if self.request.user.is_authenticated:
-            user = self.request.user
-        else:
-            ValidationError('Unauthenticated User.')
         question = get_object_or_404(Question, id=self.request.POST['question_id'])
-        serializer.save(user=user, question=question)
+        self.additional_fields['question'] = question if question else False
+        super().perform_create(serializer)
 
 
-class AnswerEvaluateAPIView(LoginRequiredMixin, CreateAPIView):
+class PostUpdateAPIView(LoginRequiredMixin, RetrieveUpdateAPIView):
+    '''
+    It's a base API view class for updating objects via ajax.
+    You have to define a class variable which is named serializer_class in inheriting view classes.
+    '''
 
-    pass
+    serializer_class = None
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.additional_fields = {}
+
+    def get(self, request, pk):
+        self.object = self.get_object()
+        return JsonResponse({'title': self.object.title, 'content': self.object.content})
+
+    def post(self, request, pk):
+        serializer = self.serializer_class(self.get_object(), data=request.data)
+        if serializer.is_valid():
+            self.perform_update(serializer, request.user)
+        return JsonResponse({'context': self.get_object().id})
+
+    def perform_update(self, serializer, user):
+        if self.additional_fields:
+            serializer.save(user=user, **self.additional_fields)
+        else:
+            serializer.save(user=user)
+
+
+class QuestionUpdateAPIView(PostUpdateAPIView):
+
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+
+class LikeAPIView(UpdateView):
+
+    model = Answer
+
+    def post(self, request):
+        answer = get_object_or_404(Answer, id=request.POST['answer_id'])
+        if request.user.is_authenticated:
+            if not request.user.like_answer.filter(id=request.POST['answer_id']).exists():
+                answer.liked_by.add(request.user)
+            else:
+                answer.liked_by.remove(request.user)
+        else:
+            raise PermissionDenied
+
+        return JsonResponse({'likes': answer.likes})
+
+class LikeAPIView_(PostUpdateAPIView):
+
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer
+
+    def post(self, request):
+        self.object = get_object_or_404(Answer, id=request.POST['answer_id'])
+        serializer = self.serializer_class(self.object, data={'content': 'like'})
+        if serializer.is_valid():
+            self.perform_update(serializer, request.user)
+        return JsonResponse({})
+
+    def perform_update(self, serializer, user):
+        self.additional_fields['liked_by'] = [user]
+        super().perform_update(serializer, user)
+
+    def partial_update(self, request, *args, **kwargs):
+        pass

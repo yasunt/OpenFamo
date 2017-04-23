@@ -6,34 +6,66 @@
   {% include 'posts/_modal_scripts.html' %}
   <script>
     $(document).ready(function() {
-      $("[id^='good_button']").click(function() {
+      $("[id^='like_button']").click(function() {
+
+        var target = this;
+
         $.ajax({
-          'url': "",
+          'url': "{% url 'posts:like' %}",
           'type': 'POST',
           'data': {
             csrfmiddlewaretoken: '{{ csrf_token }}',
-            'answer_id': ''
+            'answer_id': target.id.replace("like_button", ""),
           },
           'dataType': 'json',
           'success': function(response) {
-            alert(response.context);
+            $(target).text('Like +' + response.likes);
+          }
+        })
+      })
+
+      $("#command").click(function() {
+        $.ajax({
+          'url': "{% url 'posts:update_question' question.id %}",
+          'type': 'GET',
+          'success': function(response) {
+            $("#id_title").val(response.title);
+            $("#id_content").val(response.content);
           }
         })
       })
       $("#submit").click(function() {
-        $.ajax({
-          'url': "{% url 'posts:create_answer' %}",
-          'type': 'POST',
-          'data': {
-            csrfmiddlewaretoken: '{{ csrf_token }}',
-            'content': $("#id_content").val(),
-            'question_id': '{{ question.id }}',
-          },
-          'dataType': 'json',
-          'success': function(response) {
-            location.reload();
-          }
-        })
+        if ('{{ is_poster }}') {
+          $.ajax({
+            'url': "{% url 'posts:update_question' question.id %}",
+            'type': 'POST',
+            'data': {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              'title': $("#id_title").val(),
+              'content': $("#id_content").val(),
+              'pk': '{{ question.id }}',
+            },
+            'dataType': 'json',
+            'success': function(response) {
+              location.reload();
+            }
+          })
+        }
+        else {
+          $.ajax({
+            'url': "{% url 'posts:create_answer' %}",
+            'type': 'POST',
+            'data': {
+              csrfmiddlewaretoken: '{{ csrf_token }}',
+              'content': $("#id_content").val(),
+              'question_id': '{{ question.id }}',
+            },
+            'dataType': 'json',
+            'success': function(response) {
+              location.reload();
+            }
+          })
+        }
       })
     })
   </script>
@@ -48,11 +80,17 @@
     {% for answer in answers %}
       {% post_node answer %}
     {% endfor %}
+  </section>
   {% if request.user.is_authenticated %}
-    {% include 'posts/_create_answer_modal.html' with answer_form=form %}
-    {% include 'posts/_create_answer_trigger.html' with trigger_label='回答する' %}
+    {% if is_poster %}
+    {% include 'posts/_create_question_modal.html' %}
+    {% include 'posts/_create_question_trigger.html' with trigger_label=label %}
+    {% else %}
+      {% include 'posts/_create_answer_modal.html' with answer_form=form %}
+      {% include 'posts/_create_answer_trigger.html' with trigger_label=label %}
+    {% endif %}
   {% else %}
     {% include '_login_modal.html' with login_form=login_form %}
-    {% include '_login_modal_trigger.html' with trigger_label='hoge' %}
+    {% include '_login_modal_trigger.html' with trigger_label='ログインして投稿する' %}
   {% endif %}
 {% endblock content %}

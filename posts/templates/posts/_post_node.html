@@ -8,7 +8,7 @@
   ({{ post.created }} 投稿)
 </p>
 <p>
-  <button type="button" class="button special small" id="good_button{{ answer.id }}">Good +0</button>
+  <button type="button" class="button special small" id="like_button{{ post.id }}">Like +{{ post.likes }}</button>
   {% ifequal post.is_poster user %}
   <!-- Trigger the modal with a button -->
   <button type="button" class="button special small" data-toggle="modal" data-target="#answerModal">編集する</button>

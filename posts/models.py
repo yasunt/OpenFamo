@@ -1,4 +1,5 @@
 from django.db import models
+from django.utils.functional import cached_property
 
 from accounts.models import FamoUser
 from core.models import HitsCountMixin, TimeStampMixin
@@ -31,4 +32,10 @@ class Question(HitsCountMixin, Post):
 
 
 class Answer(Post):
+
+    @cached_property
+    def likes(self):
+        return self.liked_by.count()
+
     question = models.ForeignKey(Question, null=True)
+    liked_by = models.ManyToManyField(FamoUser, related_name="like_answer")
