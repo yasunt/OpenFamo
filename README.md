@@ -1,3 +1,3 @@
 Famo
 ==================
-<https://wwww.famoo.club>
+<https://www.famoo.club>
