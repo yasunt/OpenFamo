@@ -19,7 +19,6 @@ from .serializers import QuestionSerializer, AnswerSerializer
 
 class QuestionCreateFormMixin(FormMixin):
 
-
     def get_form_class(self):
         if self.request.user.is_authenticated:
             return QuestionCreateForm
@@ -38,6 +37,7 @@ class QuestionCreateFormMixin(FormMixin):
 
 
 class AnswerCreateFormMixin(object):
+    
     form_class = AnswerCreateForm
 
 
