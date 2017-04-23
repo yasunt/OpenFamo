@@ -184,22 +184,3 @@ class LikeAPIView(UpdateView):
             raise PermissionDenied
 
         return JsonResponse({'likes': answer.likes})
-
-class LikeAPIView_(PostUpdateAPIView):
-
-    queryset = Answer.objects.all()
-    serializer_class = AnswerSerializer
-
-    def post(self, request):
-        self.object = get_object_or_404(Answer, id=request.POST['answer_id'])
-        serializer = self.serializer_class(self.object, data={'content': 'like'})
-        if serializer.is_valid():
-            self.perform_update(serializer, request.user)
-        return JsonResponse({})
-
-    def perform_update(self, serializer, user):
-        self.additional_fields['liked_by'] = [user]
-        super().perform_update(serializer, user)
-
-    def partial_update(self, request, *args, **kwargs):
-        pass
