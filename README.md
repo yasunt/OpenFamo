@@ -1,1 +1,2 @@
-![Famo](https://www.famoo.club)
+#Famo
+<https://wwww.famoo.club>
